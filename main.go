@@ -9,8 +9,10 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"golang.org/x/crypto/nacl/secretbox"
+	"golang.org/x/term"
 	"os"
 	"seks/sopHex"
+	"syscall"
 )
 
 func ran() []byte {
@@ -60,19 +62,15 @@ func main() {
 		fmt.Println("Usage: seks -e|-d")
 		return
 	}
-	fmt.Println("Enter password Your Password: ")
-	var r rune
-	var password []byte
-	for {
-		fmt.Scanf("%c", &r)
-		if r == '\n' {
-			break
-		}
-		password = append(password, byte(r))
+	fmt.Print("Enter password Your Password: ")
+	password, err := term.ReadPassword(int(syscall.Stdin))
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 	var buff bytes.Buffer
-	fmt.Println("Enter input data ending with EOF (Ctrl-D): ")
-	_, err := buff.ReadFrom(os.Stdin)
+	fmt.Printf("\nEnter input data ending with EOF (Ctrl-D):\n")
+	_, err = buff.ReadFrom(os.Stdin)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -93,14 +91,7 @@ func main() {
 		}
 		result = decrypt(crypt, hashPasswd(crypt[0:32], password))
 	}
-	fmt.Println("Result: ")
+	fmt.Printf("-----Result-----\n")
 	fmt.Println(result)
-
-	//
-	//
-	//message := []byte("I like to eat apples and bananas. However, I do not like to eat oranges. Cars can drive!")
-	//encrypted := secretbox.Seal(salt, message, &nonce, &key)
-
-	//fmt.Println(sopHex.Marshall(encrypted))
 
 }

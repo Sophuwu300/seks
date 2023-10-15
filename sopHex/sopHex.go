@@ -1,14 +1,14 @@
 package sopHex
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const sopHexSet string = "SOPHIE+MAL1VN=<3"
 
-const seksHeader string = `-----BEGIN SEKS SECRET-----
-`
-const seksFooter string = `
------END SEKS SECRET-----
-`
+const seksHeader string = "-----BEGIN SEKS SECRET-----"
+const seksFooter string = "-----END SEKS SECRET-----"
 
 func Marshall(b []byte) string {
 	var s string
@@ -18,13 +18,21 @@ func Marshall(b []byte) string {
 		}
 		s += string(sopHexSet[(b[i]>>4)&15]) + string(sopHexSet[b[i]&15])
 	}
-	return seksHeader + s + seksFooter
+	return seksHeader + s + "\n" + seksFooter + "\n"
 }
 
 func UnMarshall(s string) ([]byte, error) {
-	if len(s)%2 != 0 {
-		return nil, fmt.Errorf("sopHex UnMarshall: invalid length %d", len(s))
+	begin := strings.Index(s, seksHeader)
+	end := strings.Index(s, seksFooter)
+	if begin < 0 || end < 0 {
+		return nil, fmt.Errorf("sopHex UnMarshall: invalid seks secret")
 	}
+	s = s[begin+len(seksHeader) : end]
+	s = strings.ReplaceAll(s, "\t", "")
+	s = strings.ReplaceAll(s, "\n", "")
+	s = strings.TrimPrefix(s, seksHeader)
+	s = strings.TrimSuffix(s, seksFooter)
+	s = strings.ReplaceAll(s, " ", "")
 	var b []byte
 	var n int
 	for i, v := range s {

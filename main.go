@@ -4,10 +4,12 @@
 package main
 
 import (
+	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
 	"fmt"
 	"golang.org/x/crypto/nacl/secretbox"
+	"os"
 	"seks/sopHex"
 )
 
@@ -20,53 +22,85 @@ func ran() []byte {
 	return b[:]
 }
 
+func decrypt(encrypted []byte, key [32]byte) string {
+	deNonce := [24]byte(encrypted[32 : 32+24])
+	decrypted, boolEnlon := secretbox.Open(nil, encrypted[32+24:], &deNonce, &key)
+	if boolEnlon != true {
+		return "Error decrypting"
+	}
+	return string(decrypted)
+}
+
+func hashPasswd(salt []byte, passwd []byte) [32]byte {
+	hash := sha256.New()
+	hash.Write(passwd)
+	hash.Write(salt)
+	var key [32]byte
+	copy(key[:], hash.Sum(nil))
+	return key
+}
+
 func main() {
 	// NaCl crypto_box symmetric encryption
 	// Make a bbolt database
 	// Add buckets for categories of secrets
 	// User makes a password for each bucket
 
-	passwd := []byte("TestPassword")
-
-	encrypted, err := sopHex.UnMarshall(`-----BEGIN SEKS SECRET-----
-A+=PEEM3<3PI<++1VE+=VS1O+L+H1AN3
-=L3HI+MPM33OE+3NANN1NASNSII=MV+N
-1+P3VSOA+SOVLSL3VE=+EHM++LSPEAIM
-SLI3NPMPN3IMMP=V<VS1N31AHPHAI1=S
-+3P=1ISMIHALS3VHL=V3O3=1V=<1SI1H
-E1HH=H3=IVE+OE=H+E=SE<VL1V13SIH=
-3AP<OA3O=HNELO3PNL3N+1LO<I3SMOP<
-VSEH<HEOIVOHSMLV=HH=3MAO3HMSSSEV
-==E3AOO<HPOMSN<PAE1HNVP<NP+AVO+O
-3ISIHAP1PE=1VPS<O1S<+LN+H=E3MLV+
------END SEKS SECRET-----
-`)
+	if len(os.Args) < 2 {
+		fmt.Println("Usage: seks -e|-d")
+		return
+	}
+	e := false
+	if os.Args[1] == "-e" {
+		e = true
+		fmt.Println("Encrypting. ")
+	} else if os.Args[1] == "-d" {
+		fmt.Println("Decrypting. ")
+	} else {
+		fmt.Println("Usage: seks -e|-d")
+		return
+	}
+	fmt.Println("Enter password Your Password: ")
+	var r rune
+	var password []byte
+	for {
+		fmt.Scanf("%c", &r)
+		if r == '\n' {
+			break
+		}
+		password = append(password, byte(r))
+	}
+	var buff bytes.Buffer
+	fmt.Println("Enter input data ending with EOF (Ctrl-D): ")
+	_, err := buff.ReadFrom(os.Stdin)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	salt := encrypted[0:32]
-	//salt := ran()
-	hash := sha256.New()
-	hash.Write(passwd)
-	hash.Write(salt)
+	var result string
+	if e {
+		salt := ran()
+		key := hashPasswd(salt, password)
+		var nonce = [24]byte(ran()[0:24])
+		salt = append(salt[:], nonce[:]...)
+		result = sopHex.Marshall(secretbox.Seal(salt, buff.Bytes(), &nonce, &key))
+	} else {
+		var crypt []byte
+		crypt, err = sopHex.UnMarshall(buff.String())
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+		result = decrypt(crypt, hashPasswd(crypt[0:32], password))
+	}
+	fmt.Println("Result: ")
+	fmt.Println(result)
 
-	var key [32]byte
-	copy(key[:], hash.Sum(nil))
-
-	//var nonce = [24]byte(ran()[0:24])
-	//salt = append(salt[:], nonce[:]...)
+	//
+	//
 	//message := []byte("I like to eat apples and bananas. However, I do not like to eat oranges. Cars can drive!")
 	//encrypted := secretbox.Seal(salt, message, &nonce, &key)
 
 	//fmt.Println(sopHex.Marshall(encrypted))
-
-	deNonce := [24]byte(encrypted[32 : 32+24])
-	decrypted, boolEnlon := secretbox.Open(nil, encrypted[32+24:], &deNonce, &key)
-	if boolEnlon != true {
-		fmt.Println("OOPS")
-		return
-	}
-	fmt.Println(string(decrypted))
 
 }

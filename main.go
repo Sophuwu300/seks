@@ -1,5 +1,5 @@
 /*
- * SEKS: Secrets Encrypted Kept Safe
+ * SEKS: Some Encryption Key Stuff
  */
 package main
 

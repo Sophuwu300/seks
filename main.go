@@ -1,7 +1,7 @@
 /*
  * SEKS: Some Encryption Key Stuff
  */
-package main
+package seks
 
 import (
 	"bytes"
@@ -11,7 +11,6 @@ import (
 	"golang.org/x/crypto/nacl/secretbox"
 	"golang.org/x/term"
 	"os"
-	"seks/sopHex"
 	"syscall"
 )
 

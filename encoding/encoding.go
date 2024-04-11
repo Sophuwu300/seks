@@ -1,27 +1,28 @@
-package sopHex
+package encoding
 
 import (
 	"fmt"
 	"strings"
 )
 
-const sopHexSet string = "SOPHIE+MAL1VN=<3"
+// var SEKSSet string = `SOPHIE+MAL1VN=<3` // short for test purposes
+var SEKSSet string = `ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789$£`
 
-const seksHeader string = "-----BEGIN SEKS SECRET-----"
-const seksFooter string = "-----END SEKS SECRET-----"
+const seksHeader string = "-----BEGIN SOME ENCRYPTION KEY STUFF-----"
+const seksFooter string = "-----END SOME ENCRYPTION KEY STUFF-----"
 
-func Marshall(b []byte) string {
+func Armour(b []byte) string {
 	var s string
 	for i := 0; i < len(b); i++ {
-		if i%16 == 0 {
+		if i%69 == 0 {
 			s += "\n"
 		}
-		s += string(sopHexSet[(b[i]>>4)&15]) + string(sopHexSet[b[i]&15])
+		s += string(SEKSSet[(b[i]>>4)&15]) + string(SEKSSet[b[i]&15])
 	}
 	return seksHeader + s + "\n" + seksFooter + "\n"
 }
 
-func UnMarshall(s string) ([]byte, error) {
+func UnArmour(s string) ([]byte, error) {
 	begin := strings.Index(s, seksHeader)
 	end := strings.Index(s, seksFooter)
 	if begin < 0 || end < 0 {
@@ -50,7 +51,7 @@ func UnMarshall(s string) ([]byte, error) {
 }
 
 func index(c rune) (j int) {
-	for j, v := range sopHexSet {
+	for j, v := range SEKSSet {
 		if v == c {
 			return j
 		}

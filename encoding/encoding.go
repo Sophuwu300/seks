@@ -1,4 +1,4 @@
-package encoding
+package git.sophuwu.site/seks/encoding
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ func UnArmour(s string) ([]byte, error) {
 	begin := strings.Index(s, seksHeader)
 	end := strings.Index(s, seksFooter)
 	if begin < 0 || end < 0 {
-		return nil, fmt.Errorf("sopHex UnMarshall: invalid seks secret")
+		return nil, fmt.Errorf("SEKS UnMarshall: invalid seks secret")
 	}
 	s = s[begin+len(seksHeader) : end]
 	s = strings.ReplaceAll(s, "\t", "")
@@ -39,7 +39,7 @@ func UnArmour(s string) ([]byte, error) {
 	for i, v := range s {
 		n = index(v)
 		if n == -1 {
-			return nil, fmt.Errorf("sopHex UnMarshall: invalid character %q at index %d", v, i)
+			return nil, fmt.Errorf("SEKS UnMarshall: invalid character %q at index %d", v, i)
 		}
 		if i%2 == 0 {
 			b = append(b, byte(n<<4))

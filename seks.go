@@ -1,17 +1,9 @@
-/*
- * SEKS: Some Encryption Key Stuff
- */
-package seks
+package git.sophuwu.site/seks
 
 import (
-	"bytes"
 	"crypto/rand"
 	"crypto/sha256"
-	"fmt"
 	"golang.org/x/crypto/nacl/secretbox"
-	"golang.org/x/term"
-	"os"
-	"syscall"
 )
 
 func ran() []byte {
@@ -40,7 +32,7 @@ func hashPasswd(salt []byte, passwd []byte) [32]byte {
 	copy(key[:], hash.Sum(nil))
 	return key
 }
-
+/*
 func main() {
 	// NaCl crypto_box symmetric encryption
 	// Make a bbolt database
@@ -94,3 +86,4 @@ func main() {
 	fmt.Println(result)
 
 }
+ */

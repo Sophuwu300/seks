@@ -1,4 +1,4 @@
-module sophuwu.site/seks.git
+module git.sophuwu.site/seks
 
 go 1.21.3
 

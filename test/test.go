@@ -7,23 +7,31 @@ import (
 )
 
 func main() {
-	if len(os.Args) < 4 {
-		os.Exit(1)
+	if len(os.Args) > 1 && os.Args[1] == "gen" {
+		pub, priv := seks.KeyGen()
+		fmt.Println(pub)
+		fmt.Println(priv)
+		return
 	}
-	b, e := os.ReadFile(os.Args[3])
-	if e != nil {
-		fmt.Println(e)
-		os.Exit(1)
+	if len(os.Args) != 5 {
+		return
+	}
+	keys := make(map[byte]string)
+	keys[os.Args[2][0]] = os.Args[2]
+	keys[os.Args[3][0]] = os.Args[3]
+	b, err := os.ReadFile(os.Args[4])
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
 	if os.Args[1] == "e" {
-		fmt.Println(seks.Encrypt(string(b), os.Args[2]))
+		b, err = seks.EncryptArmour(b, keys['p'], keys['S'])
+	} else if os.Args[1] == "d" {
+		b, err = seks.DecryptArmour(b, keys['p'], keys['S'])
 	}
-	if os.Args[1] == "d" {
-		s, err := seks.Decrypt(string(b), os.Args[2])
-		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
-		}
-		fmt.Println(s)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+	fmt.Println(string(b))
 }

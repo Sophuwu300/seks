@@ -3,7 +3,7 @@ package seks
 import (
 	"crypto/rand"
 	"crypto/sha256"
-	"fmt"
+	"encoding/base64"
 	"golang.org/x/crypto/nacl/secretbox"
 	"strings"
 )
@@ -25,34 +25,16 @@ func hashPasswd(salt []byte, passwd []byte) [32]byte {
 	return key
 }
 
-const seksArmour = `0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz-_`
-const seksHeader = `-----BEGIN SOME ENCRYPTION KEY STUFF-----`
-const seksFooter = `------END SOME ENCRYPTION KEY STUFF------`
+const seksHeader = "-----BEGIN SOME ENCRYPTION KEY STUFF-----\n\n"
+const seksFooter = "\n------END SOME ENCRYPTION KEY STUFF------"
 
 func armour(b []byte) string {
 	var s string
-	var n uint = 0
-	var m uint = 0
-	for i := 0; i < 3-len(b)%3; i++ {
-		b = append(b, 0)
-	}
-	for _, c := range b {
-		n |= uint(c) << uint(m*8)
-		m++
-		if m == 3 {
-			for j := 0; j < 4; j++ {
-				s += string(seksArmour[n&63])
-				n >>= 6
-			}
-			m = 0
-			n = 0
-		}
-	}
-	// add newlines
-	for i := 0; i < len(s); i += len(seksHeader) {
+	s = base64.StdEncoding.EncodeToString(b)
+	for i := 64; i < len(s); i += 64 {
 		s = s[:i] + "\n" + s[i:]
 	}
-	return seksHeader + s + "\n" + seksFooter + "\n"
+	return seksHeader + s + seksFooter
 }
 
 func Encrypt(data string, password string) string {
@@ -87,45 +69,10 @@ func decryptBytes(encrypted []byte, pass string) []byte {
 }
 
 func unArmour(s string) ([]byte, error) {
-	s = strings.ReplaceAll(s, "\t", "")
+	start := strings.Index(s, seksHeader) + len(seksHeader)
+	end := strings.Index(s, seksFooter)
+	s = s[start:end]
 	s = strings.ReplaceAll(s, "\n", "")
-	s = strings.TrimPrefix(s, seksHeader)
-	s = strings.TrimSuffix(s, seksFooter)
 	s = strings.ReplaceAll(s, " ", "")
-	var b []byte
-	var n uint = 0
-	var m uint = 0
-	for _, c := range s {
-		i := index(c)
-		if i < 0 {
-			return nil, fmt.Errorf("SEKS UnMarshall: invalid character")
-		}
-		n |= uint(i) << uint(m*6)
-		m++
-		if m == 4 {
-			for j := 0; j < 3; j++ {
-				b = append(b, byte(n&255))
-				n >>= 8
-			}
-			m = 0
-			n = 0
-		}
-	}
-	if len(b) > 0 { // remove padding
-		for i := 0; i < 3; i++ {
-			if b[len(b)-1] == 0 {
-				b = b[:len(b)-1]
-			}
-		}
-	}
-	return b, nil
-}
-
-func index(c rune) (j int) {
-	for j, v := range seksArmour {
-		if v == c {
-			return j
-		}
-	}
-	return -1
+	return base64.StdEncoding.DecodeString(s)
 }

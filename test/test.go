@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"git.sophuwu.site/seks"
 	"os"
+	"sophuwu.site/seks"
 )
 
 func main() {
@@ -19,7 +19,11 @@ func main() {
 		fmt.Println(seks.Encrypt(string(b), os.Args[2]))
 	}
 	if os.Args[1] == "d" {
-		s, _ := seks.Decrypt(string(b), os.Args[2])
+		s, err := seks.Decrypt(string(b), os.Args[2])
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		fmt.Println(s)
 	}
 }

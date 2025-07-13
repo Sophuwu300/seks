@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"sophuwu.site/seks"
+	"sophuwu.site/seks/keyring"
 	"strings"
 )
 
@@ -84,7 +85,7 @@ func init() {
 
 func main() {
 	if len(os.Args) == 2 && (os.Args[1] == "g" || os.Args[1] == "keygen") {
-		pub, priv := seks.KeyGen()
+		pub, priv := keyring.KeyGen()
 		fmt.Println(pub)
 		fmt.Println(priv)
 		return

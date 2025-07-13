@@ -1,9 +1,9 @@
 package main
 
-import "sophuwu.site/seks"
+import "sophuwu.site/seks/keyring"
 
 func main() {
-       	pub, priv := seks.KeyGen()
+	pub, priv := keyring.KeyGen()
 	println(pub)
 	println(priv)
 }

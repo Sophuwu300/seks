@@ -9,16 +9,6 @@ import (
 	"strings"
 )
 
-func KeyGen() (string, string) {
-	pub, priv, err := box.GenerateKey(rand.Reader)
-	if err != nil {
-		return "", ""
-	}
-	pubs := "public-key-" + hex.EncodeToString(pub[:])
-	privs := "SECRET-KEY-" + strings.ToUpper(hex.EncodeToString(priv[:]))
-	return pubs, privs
-}
-
 func ReadKey(s string) ([32]byte, error) {
 	s = strings.ToLower(s)
 	s = strings.TrimPrefix(s, "public-key-")
